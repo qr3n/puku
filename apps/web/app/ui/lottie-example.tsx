@@ -2,10 +2,13 @@
 
 import { useState } from "react"
 import Image from "next/image"
-import { ChevronLeft, ChevronRight } from "lucide-react"
 import { Button } from "@workspace/ui/components/button"
 import { Input } from "@workspace/ui/components/input"
 import { Lottie, LottieSkeleton } from "@workspace/ui/components/lottie"
+import {
+  Pagination,
+  PaginationContent,
+} from "@workspace/ui/components/pagination"
 import {
   getLottieAsset,
   lottieNames,
@@ -26,7 +29,6 @@ export function LottieExample() {
     name.replaceAll("-", " ").includes(search)
   )
   const pageCount = Math.ceil(matchingNames.length / pageSize)
-  const pageNames = matchingNames.slice(page * pageSize, (page + 1) * pageSize)
 
   return (
     <div className="space-y-4">
@@ -51,58 +53,46 @@ export function LottieExample() {
           setPage(0)
         }}
       />
-      {pageNames.length === 0 && (
+      {pageCount === 0 ? (
         <p role="status" className="text-sm text-muted-foreground">
           No animations found.
         </p>
+      ) : (
+        <PaginationContent key={query} page={page} className="-m-1">
+          {(pageIndex) => (
+            <div className="flex flex-wrap gap-1 p-1">
+              {matchingNames
+                .slice(pageIndex * pageSize, (pageIndex + 1) * pageSize)
+                .map((animationName) => (
+                  <Button
+                    key={animationName}
+                    size="icon-xs"
+                    variant={animationName === name ? "tonal" : "ghost"}
+                    aria-label={`Preview ${animationName.replaceAll("-", " ")}`}
+                    aria-pressed={animationName === name}
+                    title={animationName}
+                    onClick={() => setName(animationName)}
+                  >
+                    <Image
+                      src={getLottieAsset(animationName).firstFrame}
+                      alt=""
+                      width={32}
+                      height={32}
+                      unoptimized
+                      loading="lazy"
+                    />
+                  </Button>
+                ))}
+            </div>
+          )}
+        </PaginationContent>
       )}
-      <div className="flex flex-wrap gap-1">
-        {pageNames.map((animationName) => (
-          <Button
-            key={animationName}
-            size="icon-xs"
-            variant={animationName === name ? "tonal" : "ghost"}
-            aria-label={`Preview ${animationName.replaceAll("-", " ")}`}
-            aria-pressed={animationName === name}
-            title={animationName}
-            onClick={() => setName(animationName)}
-          >
-            <Image
-              src={getLottieAsset(animationName).firstFrame}
-              alt=""
-              width={32}
-              height={32}
-              unoptimized
-              loading="lazy"
-            />
-          </Button>
-        ))}
-      </div>
-      {pageCount > 1 && (
-        <div className="flex items-center gap-3">
-          <Button
-            size="icon-xs"
-            variant="ghost"
-            aria-label="Previous animation page"
-            disabled={page === 0}
-            onClick={() => setPage(page - 1)}
-          >
-            <ChevronLeft aria-hidden />
-          </Button>
-          <span aria-live="polite" className="text-sm text-muted-foreground">
-            {page + 1} / {pageCount}
-          </span>
-          <Button
-            size="icon-xs"
-            variant="ghost"
-            aria-label="Next animation page"
-            disabled={page === pageCount - 1}
-            onClick={() => setPage(page + 1)}
-          >
-            <ChevronRight aria-hidden />
-          </Button>
-        </div>
-      )}
+      <Pagination
+        page={page}
+        pageCount={pageCount}
+        onPageChange={setPage}
+        label="Animation pages"
+      />
     </div>
   )
 }

@@ -413,8 +413,9 @@
 }
 
 @layer components {
-  /* Scale the appearance while the native button keeps its hit area. */
-  [data-slot="button"]::before {
+  /* Scale the appearance while the interactive element keeps its hit area. */
+  [data-slot="button"]::before,
+  .ui-pressable::before {
     position: absolute;
     inset: -1px;
     border: 1px solid transparent;
@@ -432,6 +433,24 @@
     gap: inherit;
   }
 
+  .ui-pressable {
+    isolation: isolate;
+
+    &::before {
+      inset: 0;
+      z-index: -1;
+    }
+
+    > [data-press-content] {
+      display: flex;
+      width: 100%;
+      min-width: 0;
+      align-items: inherit;
+      justify-content: inherit;
+      gap: inherit;
+    }
+  }
+
   @media (prefers-reduced-motion: no-preference) {
     [data-slot="button"] {
       /* Keep press transitions from repainting neighboring button edges. */
@@ -440,11 +459,14 @@
 
     [data-slot="button"]::before,
     [data-slot="button"] > [data-slot="shimmer"],
-    [data-slot="button"] > [data-button-content] {
-      scale: var(--button-press-scale, 1);
+    [data-slot="button"] > [data-button-content],
+    .ui-pressable::before,
+    .ui-pressable > [data-press-content] {
+      scale: var(--press-scale, 1);
     }
 
-    [data-slot="button"]::before {
+    [data-slot="button"]::before,
+    .ui-pressable::before {
       transition: background-color 200ms ease;
     }
   }
@@ -795,7 +817,11 @@
     overflow-wrap: anywhere;
 
     &[data-highlighted], &:active {
-      @apply bg-accent text-accent-foreground;
+      @apply text-accent-foreground;
+
+      &:not(.ui-pressable), &.ui-pressable::before {
+        @apply bg-accent;
+      }
     }
 
     &[data-disabled] {

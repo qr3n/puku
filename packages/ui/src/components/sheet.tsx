@@ -1,8 +1,16 @@
 "use client"
 
-import type { ComponentProps, ReactElement, ReactNode } from "react"
+import type {
+  ComponentProps,
+  CSSProperties,
+  ReactElement,
+  ReactNode,
+  Ref,
+} from "react"
 import { useRender } from "@base-ui/react/use-render"
+import { usePressMotion } from "@workspace/ui/hooks/use-press-motion"
 import { cn } from "@workspace/ui/lib/utils"
+import { motion } from "framer-motion"
 import {
   Drawer,
   DrawerContent,
@@ -40,15 +48,16 @@ type SheetItemProps = (
   render?: ReactElement
 }
 
-export function SheetItem({
-  active,
-  icon,
-  render,
-  className,
-  children,
+const MotionSheetItem = motion.create(function MotionSheetItem({
+  itemProps,
   ref,
-  ...props
-}: SheetItemProps) {
+  style,
+}: {
+  itemProps: SheetItemProps
+  ref?: Ref<HTMLAnchorElement | HTMLButtonElement>
+  style?: CSSProperties
+}) {
+  const { active, icon, render, className, children, ...props } = itemProps
   const isLink = props.href !== undefined
   const current =
     props["aria-current"] ?? (active && isLink ? "page" : undefined)
@@ -66,26 +75,37 @@ export function SheetItem({
     props: {
       ...(isLink ? {} : { type: "button" }),
       ...props,
+      style: { ...props.style, ...style },
       "aria-current": current,
       className: cn(
-        "flex min-h-14 w-full cursor-pointer items-center gap-4 rounded-2xl px-5 py-4 text-left text-base font-medium transition-colors outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-default disabled:opacity-50 motion-reduce:transition-none",
+        "ui-pressable relative flex min-h-14 w-full cursor-pointer items-center gap-4 rounded-2xl px-5 py-4 text-left text-base font-medium transition-colors outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-default disabled:opacity-50 motion-reduce:transition-none",
         highlighted
-          ? "bg-sheet-item-active text-sheet-item-active-foreground"
-          : "bg-sheet-item text-sheet-item-foreground hover:bg-sheet-item-active hover:text-sheet-item-active-foreground",
+          ? "text-sheet-item-active-foreground before:bg-sheet-item-active"
+          : "text-sheet-item-foreground before:bg-sheet-item hover:text-sheet-item-active-foreground hover:before:bg-sheet-item-active",
         className
       ),
       children: (
-        <>
+        <span data-press-content="">
           {icon && (
             <span aria-hidden className="shrink-0 [&_svg]:size-5">
               {icon}
             </span>
           )}
           <span className="min-w-0 [overflow-wrap:anywhere]">{children}</span>
-        </>
+        </span>
       ),
     },
   })
+})
+
+export function SheetItem({ ref, ...props }: SheetItemProps) {
+  const pressMotion = usePressMotion(
+    ("disabled" in props && props.disabled) ||
+      props["aria-disabled"] === true ||
+      props["aria-disabled"] === "true"
+  )
+
+  return <MotionSheetItem {...pressMotion} itemProps={props} ref={ref} />
 }
 
 export function SheetNav({ className, ...props }: ComponentProps<"nav">) {

@@ -4,15 +4,11 @@ import { type CSSProperties, type Ref } from "react"
 import { Button as ButtonPrimitive } from "@base-ui/react/button"
 import { Lottie, type LottieProps } from "@workspace/ui/components/lottie"
 import { Shimmer } from "@workspace/ui/components/shimmer"
-import { useReducedMotion } from "@workspace/ui/hooks/use-reduced-motion"
+import { usePressMotion } from "@workspace/ui/hooks/use-press-motion"
 import type { LottieName } from "@workspace/ui/lib/lottie"
 import { cva, type VariantProps } from "class-variance-authority"
 import { cn } from "cn"
-import {
-  motion,
-  type TargetAndTransition,
-  type Transition,
-} from "framer-motion"
+import { motion } from "framer-motion"
 
 const buttonVariants = cva(
   "group/button relative inline-flex max-w-full shrink-0 cursor-pointer touch-manipulation items-center justify-center rounded-[1.25rem] border border-transparent bg-clip-padding text-center text-sm font-semibold [overflow-wrap:anywhere] whitespace-normal transition-[background-color,color,border-color,box-shadow,opacity,filter] duration-200 outline-none select-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 disabled:pointer-events-none disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-3 aria-invalid:ring-destructive/20 motion-reduce:transition-none dark:focus-visible:border-transparent dark:focus-visible:ring-2 dark:focus-visible:ring-white/40 dark:aria-invalid:border-error-accent dark:aria-invalid:ring-error-accent/40 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
@@ -51,14 +47,6 @@ const buttonVariants = cva(
     },
   }
 )
-
-const REST_SCALE: TargetAndTransition = { "--button-press-scale": 1 }
-const TAP_SCALE: TargetAndTransition = { "--button-press-scale": 0.96 }
-const TAP_TRANSITION: Transition = {
-  type: "spring",
-  stiffness: 400,
-  damping: 22,
-}
 
 type ButtonLottie = LottieName | LottieProps
 
@@ -131,16 +119,13 @@ function Button({
     lottieEnd?: ButtonLottie
   }) {
   const blocked = disabled || loading
-  const reduceMotion = useReducedMotion()
+  const pressMotion = usePressMotion(blocked)
 
   return (
     <MotionButton
       ref={ref}
       loading={loading}
-      initial={false}
-      animate={REST_SCALE}
-      whileTap={blocked || reduceMotion ? undefined : TAP_SCALE}
-      transition={TAP_TRANSITION}
+      {...pressMotion}
       buttonProps={{
         ...props,
         "aria-busy": loading || props["aria-busy"],

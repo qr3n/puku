@@ -13,7 +13,10 @@ import {
 import { Combobox } from "@base-ui/react/combobox"
 import { defaultRangeExtractor, useVirtualizer } from "@tanstack/react-virtual"
 import { Check, ChevronDown, Search } from "lucide-react"
-import type { SelectOption } from "@workspace/ui/components/select"
+import {
+  renderSelectOption,
+  type SelectOption,
+} from "@workspace/ui/components/select"
 import {
   TextField,
   type FieldTextProps,
@@ -331,13 +334,16 @@ function SearchableSelectList<Value extends string | number>({
                 disabled={option.disabled}
                 aria-setsize={items.length}
                 aria-posinset={index + 1}
-                className="ui-menu-item absolute inset-x-0 top-0 min-h-0 justify-between"
+                className="ui-menu-item ui-pressable absolute inset-x-0 top-0 min-h-0 justify-between"
                 style={{ height: size, transform: `translateY(${start}px)` }}
+                render={renderSelectOption}
               >
-                <span className="min-w-0 truncate">{option.label}</span>
-                <Combobox.ItemIndicator className="shrink-0" aria-hidden>
-                  <Check className="size-4" />
-                </Combobox.ItemIndicator>
+                <div data-press-content="">
+                  <span className="min-w-0 truncate">{option.label}</span>
+                  <Combobox.ItemIndicator className="shrink-0" aria-hidden>
+                    <Check className="size-4" />
+                  </Combobox.ItemIndicator>
+                </div>
               </Combobox.Item>
             )
           })}

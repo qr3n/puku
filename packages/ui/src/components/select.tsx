@@ -1,19 +1,57 @@
 "use client"
 
 import { useOverlayHistoryProps } from "@workspace/ui/hooks/use-overlay-history"
-import type { ReactNode } from "react"
+import { usePressMotion } from "@workspace/ui/hooks/use-press-motion"
+import type { ComponentProps, CSSProperties, ReactNode, Ref } from "react"
 import { Select as Primitive } from "@base-ui/react/select"
 import {
   TextField,
   type FieldTextProps,
 } from "@workspace/ui/components/text-field"
 import { cn } from "@workspace/ui/lib/utils"
+import { motion } from "framer-motion"
 import { Check, ChevronDown } from "lucide-react"
 
 export type SelectOption<Value> = {
   value: Value
   label: string
   disabled?: boolean
+}
+
+const MotionSelectOption = motion.create(function MotionSelectOption({
+  optionProps,
+  ref,
+  style,
+}: {
+  optionProps: ComponentProps<"div">
+  ref?: Ref<HTMLDivElement>
+  style?: CSSProperties
+}) {
+  return (
+    <div
+      {...optionProps}
+      ref={ref}
+      style={{ ...optionProps.style, ...style }}
+    />
+  )
+})
+
+function SelectOptionElement({
+  disabled,
+  ref,
+  ...props
+}: ComponentProps<"div"> & { disabled: boolean }) {
+  const pressMotion = usePressMotion(disabled)
+
+  // Keep Base UI's option focus behavior when Motion adds a tab index for taps.
+  return <MotionSelectOption {...pressMotion} optionProps={props} ref={ref} />
+}
+
+export function renderSelectOption(
+  props: ComponentProps<"div">,
+  { disabled }: { disabled: boolean }
+) {
+  return <SelectOptionElement {...props} disabled={disabled} />
 }
 
 type SelectProps<Value> = Omit<
@@ -107,14 +145,17 @@ export function Select<Value extends string | number>({
                   value={option.value}
                   label={option.label}
                   disabled={option.disabled}
-                  className="ui-menu-item justify-between"
+                  className="ui-menu-item ui-pressable relative justify-between"
+                  render={renderSelectOption}
                 >
-                  <Primitive.ItemText>{option.label}</Primitive.ItemText>
-                  <span className="size-4 shrink-0" aria-hidden="true">
-                    <Primitive.ItemIndicator>
-                      <Check className="size-4" />
-                    </Primitive.ItemIndicator>
-                  </span>
+                  <div data-press-content="">
+                    <Primitive.ItemText>{option.label}</Primitive.ItemText>
+                    <span className="size-4 shrink-0" aria-hidden="true">
+                      <Primitive.ItemIndicator>
+                        <Check className="size-4" />
+                      </Primitive.ItemIndicator>
+                    </span>
+                  </div>
                 </Primitive.Item>
               ))}
             </Primitive.List>

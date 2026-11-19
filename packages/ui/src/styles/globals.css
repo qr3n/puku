@@ -216,7 +216,7 @@
     --otp-caret: rgb(255 255 255 / 80%);
     --progress-track: var(--color-zinc-700);
     --sheet-item: color-mix(in oklab, var(--color-zinc-900) 50%, transparent);
-    --sheet-item-foreground: var(--color-zinc-400);
+    --sheet-item-foreground: var(--color-zinc-300);
     --sheet-item-active: var(--color-zinc-800);
     --sheet-item-active-foreground: white;
     --success-foreground: var(--color-green-300);
@@ -546,7 +546,7 @@
   }
 
   .ui-sheet-panel {
-    @apply h-full max-h-none w-80 max-w-[86vw] rounded-none bg-surface-elevated p-5;
+    @apply h-full max-h-none w-80 max-w-[86vw] rounded-none p-5 dark:ring-1;
     padding-right: max(1.25rem, env(safe-area-inset-right));
     padding-bottom: max(1.25rem, calc(1rem + env(safe-area-inset-bottom)));
     transform: translateX(var(--drawer-swipe-movement-x, 0px));
@@ -877,21 +877,17 @@
   }
 
   .ui-checkmark {
-    @apply inline-flex items-center justify-center;
-
-    > svg {
-      @apply size-3.5;
-    }
+    @apply size-3.5;
 
     path {
       stroke-dasharray: 1 2;
       stroke-dashoffset: 1.25;
     }
+  }
 
-    &[data-checked]:not([data-indeterminate]) .ui-checkbox-check,
-    &[data-indeterminate] .ui-checkbox-minus {
-      stroke-dashoffset: 0;
-    }
+  [data-checked]:not([data-indeterminate]) > .ui-checkbox-box .ui-checkbox-check,
+  [data-indeterminate] > .ui-checkbox-box .ui-checkbox-minus {
+    stroke-dashoffset: 0;
   }
 
   @media (prefers-reduced-motion: no-preference) {
@@ -904,7 +900,7 @@
       transition: scale 200ms ease, background-color 150ms ease-out, border-color 150ms ease-out;
     }
 
-    :is(.ui-checkbox:active, .ui-checkbox-label:active > .ui-checkbox):not([data-disabled], [data-readonly]) > .ui-checkbox-box {
+    :is(.ui-checkbox:active, .ui-checkbox-label:active > .ui-checkbox, [role="menuitemcheckbox"]:active):not([data-disabled], [data-readonly]) > .ui-checkbox-box {
       scale: 0.94;
       transition-duration: 50ms, 150ms, 150ms;
     }

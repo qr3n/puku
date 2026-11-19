@@ -1,5 +1,6 @@
 "use client"
 
+import { useOverlayHistoryProps } from "@workspace/ui/hooks/use-overlay-history"
 import { Dialog as Primitive } from "@base-ui/react/dialog"
 import {
   useCloseConfirmation,
@@ -23,9 +24,10 @@ export function Modal<Payload>({
       onOpenChange: props.onOpenChange,
       actionsRef: props.actionsRef,
     })
+  const history = useOverlayHistoryProps({ ...props, ...confirmation })
 
   return (
-    <Primitive.Root {...props} {...confirmation}>
+    <Primitive.Root {...props} {...history}>
       {(state) => (
         <>
           {typeof children === "function" ? children(state) : children}

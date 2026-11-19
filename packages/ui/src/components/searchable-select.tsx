@@ -1,5 +1,6 @@
 "use client"
 
+import { useOverlayHistoryProps } from "@workspace/ui/hooks/use-overlay-history"
 import {
   useImperativeHandle,
   useMemo,
@@ -68,6 +69,9 @@ export function SearchableSelect<Value extends string | number>({
   "aria-invalid": ariaInvalid,
   ...props
 }: SearchableSelectProps<Value>) {
+  const history = useOverlayHistoryProps<Combobox.Root.OpenChangeEventDetails>(
+    {}
+  )
   const listActions = useRef<SearchableSelectListActions | null>(null)
   const items = useMemo(
     () =>
@@ -81,6 +85,7 @@ export function SearchableSelect<Value extends string | number>({
   return (
     <Combobox.Root<Value, false, SelectOption<Value>>
       {...props}
+      {...history}
       id={id}
       items={items}
       disabled={disabled || options.length === 0}

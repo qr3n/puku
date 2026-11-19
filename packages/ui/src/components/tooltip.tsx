@@ -1,5 +1,6 @@
 "use client"
 
+import { useOverlayHistoryProps } from "@workspace/ui/hooks/use-overlay-history"
 import { createContext, useContext, useId, useRef, useState } from "react"
 import { Tooltip as Primitive } from "@base-ui/react/tooltip"
 import { cn } from "@workspace/ui/lib/utils"
@@ -18,6 +19,7 @@ export function Tooltip({
   handle,
   ...props
 }: Primitive.Root.Props & { contentId?: string }) {
+  const history = useOverlayHistoryProps(props)
   const generatedId = useId()
   const [internalHandle] = useState(() => Primitive.createHandle())
   const activeHandle = handle ?? internalHandle
@@ -30,7 +32,12 @@ export function Tooltip({
         disabled,
       }}
     >
-      <Primitive.Root {...props} handle={activeHandle} disabled={disabled} />
+      <Primitive.Root
+        {...props}
+        {...history}
+        handle={activeHandle}
+        disabled={disabled}
+      />
     </TooltipContext.Provider>
   )
 }

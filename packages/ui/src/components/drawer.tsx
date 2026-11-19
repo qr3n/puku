@@ -1,5 +1,6 @@
 "use client"
 
+import { useOverlayHistoryProps } from "@workspace/ui/hooks/use-overlay-history"
 import type { ReactNode } from "react"
 import { Drawer as Primitive } from "@base-ui/react/drawer"
 import {
@@ -24,9 +25,10 @@ export function Drawer<Payload>({
       onOpenChange: props.onOpenChange,
       actionsRef: props.actionsRef,
     })
+  const history = useOverlayHistoryProps({ ...props, ...confirmation })
 
   return (
-    <Primitive.Root {...props} {...confirmation}>
+    <Primitive.Root {...props} {...history}>
       {(state) => (
         <>
           {typeof children === "function" ? children(state) : children}

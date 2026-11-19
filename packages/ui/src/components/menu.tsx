@@ -1,14 +1,16 @@
 "use client"
 
+import { useOverlayHistoryProps } from "@workspace/ui/hooks/use-overlay-history"
 import { Menu as Primitive } from "@base-ui/react/menu"
 import { cn } from "@workspace/ui/lib/utils"
-import { Check } from "lucide-react"
+import { CheckboxMark } from "@workspace/ui/components/checkbox"
 
 export function Menu<Payload>({
   modal = false,
   ...props
 }: Primitive.Root.Props<Payload>) {
-  return <Primitive.Root<Payload> {...props} modal={modal} />
+  const history = useOverlayHistoryProps(props)
+  return <Primitive.Root<Payload> {...props} {...history} modal={modal} />
 }
 
 export const MenuTrigger = Primitive.Trigger
@@ -83,11 +85,7 @@ export function MenuCheckboxItem({
       {...props}
       className={cn("ui-menu-item", className)}
     >
-      <span className="ui-checkbox-box" aria-hidden="true">
-        <Primitive.CheckboxItemIndicator keepMounted className="ui-checkmark">
-          <Check />
-        </Primitive.CheckboxItemIndicator>
-      </span>
+      <CheckboxMark />
       {children}
     </Primitive.CheckboxItem>
   )

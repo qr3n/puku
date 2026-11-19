@@ -14,25 +14,7 @@ type CheckboxProps = Omit<Primitive.Root.Props, "children" | "className"> & {
 export function Checkbox({ className, label, ...props }: CheckboxProps) {
   const control = (
     <Primitive.Root {...props} className={cn("ui-checkbox", className)}>
-      <span className="ui-checkbox-box" aria-hidden="true">
-        <Primitive.Indicator keepMounted className="ui-checkmark">
-          <svg
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          >
-            <path
-              className="ui-checkbox-check"
-              d="m20 6-11 11-5-5"
-              pathLength="1"
-            />
-            <path className="ui-checkbox-minus" d="M5 12h14" pathLength="1" />
-          </svg>
-        </Primitive.Indicator>
-      </span>
+      <CheckboxMark />
     </Primitive.Root>
   )
 
@@ -43,5 +25,29 @@ export function Checkbox({ className, label, ...props }: CheckboxProps) {
       {control}
       <span>{label}</span>
     </label>
+  )
+}
+
+/** The animated checkbox visual for controls that provide their own semantics. */
+export function CheckboxMark() {
+  return (
+    <span className="ui-checkbox-box" aria-hidden="true">
+      <svg
+        className="ui-checkmark"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      >
+        <path
+          className="ui-checkbox-check"
+          d="m20 6-11 11-5-5"
+          pathLength="1"
+        />
+        <path className="ui-checkbox-minus" d="M5 12h14" pathLength="1" />
+      </svg>
+    </span>
   )
 }

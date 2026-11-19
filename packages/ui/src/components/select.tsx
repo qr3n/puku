@@ -1,5 +1,6 @@
 "use client"
 
+import { useOverlayHistoryProps } from "@workspace/ui/hooks/use-overlay-history"
 import type { ReactNode } from "react"
 import { Select as Primitive } from "@base-ui/react/select"
 import {
@@ -47,9 +48,12 @@ export function Select<Value extends string | number>({
   "aria-invalid": ariaInvalid,
   ...props
 }: SelectProps<Value>) {
+  const history = useOverlayHistoryProps(props)
+
   return (
     <Primitive.Root<Value>
       {...props}
+      {...history}
       id={id}
       modal={modal}
       items={options}

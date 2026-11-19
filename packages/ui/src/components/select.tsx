@@ -41,7 +41,7 @@ function SelectOptionElement({
   ref,
   ...props
 }: ComponentProps<"div"> & { disabled: boolean }) {
-  const pressMotion = usePressMotion(disabled)
+  const pressMotion = usePressMotion(disabled, 0.98)
 
   // Keep Base UI's option focus behavior when Motion adds a tab index for taps.
   return <MotionSelectOption {...pressMotion} optionProps={props} ref={ref} />

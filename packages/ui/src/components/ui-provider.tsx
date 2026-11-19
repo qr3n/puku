@@ -1,6 +1,14 @@
 "use client"
 
-import { useCallback, useEffect, useRef, useState, type ReactNode } from "react"
+import {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+  type ReactNode,
+} from "react"
+import { Drawer } from "@base-ui/react/drawer"
 import { Button } from "@workspace/ui/components/button"
 import { cn } from "@workspace/ui/lib/utils"
 import { X } from "lucide-react"
@@ -44,11 +52,28 @@ export function UIProvider({
   children,
   toastPosition = "top-center",
 }: UIProviderProps) {
+  const page = useRef<HTMLDivElement>(null)
+
+  useLayoutEffect(() => {
+    const element = page.current
+    if (!element) return
+
+    const syncScroll = () => {
+      element.style.setProperty("--drawer-page-scroll", `${window.scrollY}px`)
+    }
+    syncScroll()
+    window.addEventListener("scroll", syncScroll, { passive: true })
+    return () => window.removeEventListener("scroll", syncScroll)
+  }, [])
+
   return (
-    <>
-      {children}
+    <Drawer.Provider>
+      <Drawer.IndentBackground className="ui-drawer-indent-background" />
+      <Drawer.Indent ref={page} className="ui-drawer-indent">
+        {children}
+      </Drawer.Indent>
       <ToastStack position={toastPosition} />
-    </>
+    </Drawer.Provider>
   )
 }
 

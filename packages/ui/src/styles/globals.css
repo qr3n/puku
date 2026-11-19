@@ -153,6 +153,8 @@
     --error-field-hover: color-mix(in oklab, var(--destructive) 20%, var(--background));
     --surface-elevated: var(--card);
     --surface-overlay: var(--background);
+    --drawer-indent-background: var(--color-zinc-950);
+    --drawer-transition: 300ms cubic-bezier(0.32, 0.72, 0, 1);
     --toast-surface: var(--color-zinc-100);
     --toast-success: #5aff00;
     --toast-error: #ff303c;
@@ -232,6 +234,7 @@
     --error-field-hover: #322627;
     --surface-elevated: #0e0e10;
     --surface-overlay: var(--color-zinc-950);
+    --drawer-indent-background: var(--color-zinc-800);
     --toast-surface: var(--color-zinc-800);
     --modal-shadow: 0 24px 80px rgb(0 0 0 / 55%);
     --confirm-shadow: 0 24px 80px rgb(0 0 0 / 65%);
@@ -477,6 +480,43 @@
 }
 
 @layer components {
+  .ui-drawer-indent {
+    @apply relative min-h-dvh bg-background;
+  }
+
+  .ui-drawer-indent-background {
+    @apply pointer-events-none fixed inset-0;
+    background-color: var(--drawer-indent-background);
+    opacity: 0;
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .ui-drawer-indent {
+      /* Anchor the scale to the visible page even when the document is scrolled. */
+      transform-origin: center calc(var(--drawer-page-scroll, 0px) + 50dvh);
+      transition: scale var(--drawer-transition);
+    }
+
+    .ui-drawer-indent-background {
+      transition: opacity var(--drawer-transition);
+    }
+
+    /* Sheet shares the drawer primitive. Indent only behind a bottom panel. */
+    body:has(.ui-drawer-panel[data-open]:not(.ui-sheet-panel)) {
+      .ui-drawer-indent[data-active] {
+        scale: calc(0.96 + 0.04 * clamp(0, var(--drawer-swipe-progress, 0), 1));
+      }
+
+      .ui-drawer-indent-background[data-active] {
+        opacity: 1;
+      }
+    }
+
+    body:has(.ui-drawer-panel[data-open][data-swiping]:not(.ui-sheet-panel)) .ui-drawer-indent {
+      transition-duration: 0ms;
+    }
+  }
+
   .ui-overlay-backdrop {
     --overlay-opacity: 0.55;
     @apply fixed inset-0 z-50 min-h-dvh bg-black transition-opacity duration-300 motion-reduce:transition-none;
@@ -534,7 +574,7 @@
     @apply max-h-[90dvh] w-full max-w-md rounded-t-[2rem] px-4 pt-4 dark:shadow-none dark:ring-0;
     padding-bottom: max(1rem, env(safe-area-inset-bottom));
     transform: translateY(var(--drawer-swipe-movement-y, 0px));
-    transition: transform 300ms cubic-bezier(0.32, 0.72, 0, 1);
+    transition: transform var(--drawer-transition);
 
     &[data-swiping] {
       transition-duration: 0ms;

@@ -130,6 +130,8 @@
     --button-ghost-hover: var(--button-tertiary);
     --field: var(--color-zinc-100);
     --field-hover: var(--color-zinc-200);
+    /* Fade highlight layers to avoid flashes during background-color transitions. */
+    --control-hover-duration: 120ms;
     --switch-track: var(--color-zinc-200);
     --otp-slot: var(--color-zinc-100);
     --otp-slot-filled: var(--color-zinc-200);
@@ -376,7 +378,7 @@
   }
 
   .ui-text-field-control {
-    @apply block w-full bg-field text-foreground outline-none transition-colors duration-200 placeholder:text-muted-foreground hover:bg-field-hover focus:bg-field-hover disabled:opacity-50 motion-reduce:transition-none;
+    @apply block w-full bg-field text-foreground outline-none placeholder:text-muted-foreground hover:bg-field-hover focus:bg-field-hover disabled:opacity-50;
     border-radius: var(--field-radius);
     padding: 1rem var(--field-right, var(--field-padding)) 1rem var(--field-left, var(--field-padding));
     font-size: var(--field-font-size);
@@ -389,6 +391,41 @@
 
     &[aria-invalid]:not([aria-invalid="false"]) {
       @apply bg-error-field hover:bg-error-field-hover focus:bg-error-field-hover;
+    }
+  }
+
+  .ui-text-field:has(> .ui-text-field-control:enabled) {
+    background-color: var(--field-surface, var(--field));
+    border-radius: var(--field-radius);
+
+    > .ui-text-field-control {
+      background-color: transparent;
+    }
+
+    &:has(> .ui-text-field-control[aria-invalid]:not([aria-invalid="false"])) {
+      --field-surface: var(--error-field);
+      --field-highlight: var(--error-field-hover);
+    }
+
+    &::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      z-index: -1;
+      border-radius: inherit;
+      background-color: var(--field-highlight, var(--field-hover));
+      pointer-events: none;
+    }
+
+    /* Keep the trigger highlighted while the popup closes and returns focus. */
+    &:has(> .ui-text-field-control:is(:focus, [data-popup-open], [data-popup-side]))::before {
+      opacity: 1;
+    }
+
+    @media (hover: hover) {
+      &:has(> .ui-text-field-control:hover)::before {
+        opacity: 1;
+      }
     }
   }
 
@@ -413,15 +450,47 @@
 }
 
 @layer components {
-  /* Scale the appearance while the interactive element keeps its hit area. */
   [data-slot="button"]::before,
-  .ui-pressable::before {
+  [data-slot="button"]::after,
+  .ui-sheet-item::before,
+  .ui-sheet-item::after,
+  .ui-menu-item::before,
+  .ui-searchable-select-search::before {
     position: absolute;
-    inset: -1px;
-    border: 1px solid transparent;
+    inset: 0;
+    z-index: -1;
     border-radius: inherit;
     pointer-events: none;
     content: "";
+  }
+
+  [data-slot="button"]::before,
+  [data-slot="button"]::after {
+    inset: -1px;
+    border: 1px solid transparent;
+  }
+
+  [data-slot="button"],
+  .ui-sheet-item,
+  .ui-menu-item,
+  .ui-searchable-select-search {
+    isolation: isolate;
+  }
+
+  :where(.ui-text-field, .ui-menu-item, .ui-searchable-select-search)::before,
+  [data-slot="button"]::after,
+  .ui-sheet-item::after {
+    opacity: 0;
+
+    @media (prefers-reduced-motion: no-preference) {
+      transition: opacity var(--control-hover-duration) ease-out;
+    }
+  }
+
+  @media (hover: hover) {
+    :is([data-slot="button"], .ui-sheet-item):not(:disabled, [aria-disabled="true"]):hover::after {
+      opacity: 1;
+    }
   }
 
   [data-slot="button"] > [data-button-content] {
@@ -433,22 +502,13 @@
     gap: inherit;
   }
 
-  .ui-pressable {
-    isolation: isolate;
-
-    &::before {
-      inset: 0;
-      z-index: -1;
-    }
-
-    > [data-press-content] {
-      display: flex;
-      width: 100%;
-      min-width: 0;
-      align-items: inherit;
-      justify-content: inherit;
-      gap: inherit;
-    }
+  .ui-pressable > [data-press-content] {
+    display: flex;
+    width: 100%;
+    min-width: 0;
+    align-items: inherit;
+    justify-content: inherit;
+    gap: inherit;
   }
 
   @media (prefers-reduced-motion: no-preference) {
@@ -457,17 +517,15 @@
       transform: translateZ(0);
     }
 
+    /* Scale the appearance while the interactive element keeps its hit area. */
     [data-slot="button"]::before,
+    [data-slot="button"]::after,
     [data-slot="button"] > [data-slot="shimmer"],
     [data-slot="button"] > [data-button-content],
     .ui-pressable::before,
+    .ui-sheet-item::after,
     .ui-pressable > [data-press-content] {
       scale: var(--press-scale, 1);
-    }
-
-    [data-slot="button"]::before,
-    .ui-pressable::before {
-      transition: background-color 200ms ease;
     }
   }
 }
@@ -813,14 +871,19 @@
   }
 
   .ui-menu-item {
-    @apply flex min-h-11 cursor-pointer touch-manipulation items-center gap-2.5 rounded-xl px-3 py-2 text-sm font-medium outline-none select-none;
+    --control-hover-duration: 40ms;
+    @apply relative flex min-h-11 cursor-pointer touch-manipulation items-center gap-2.5 rounded-xl px-3 py-2 text-sm font-medium outline-none select-none;
     overflow-wrap: anywhere;
+
+    &::before {
+      @apply bg-accent;
+    }
 
     &[data-highlighted], &:active {
       @apply text-accent-foreground;
 
-      &:not(.ui-pressable), &.ui-pressable::before {
-        @apply bg-accent;
+      &::before {
+        opacity: 1;
       }
     }
 
@@ -831,15 +894,6 @@
 
   .ui-select-trigger {
     @apply relative flex min-w-0 cursor-pointer touch-manipulation items-center overflow-clip text-start font-medium select-none;
-
-    /* Keep the active surface while the popup closes and returns focus. */
-    &:is([data-popup-open], [data-popup-side]) {
-      @apply bg-field-hover;
-
-      &[aria-invalid]:not([aria-invalid="false"]) {
-        @apply bg-error-field-hover;
-      }
-    }
 
     &:disabled {
       @apply cursor-default;
@@ -898,7 +952,15 @@
   }
 
   .ui-searchable-select-search {
-    @apply flex shrink-0 items-center gap-2 rounded-xl bg-field px-3 text-muted-foreground focus-within:bg-field-hover;
+    @apply relative flex shrink-0 items-center gap-2 rounded-xl bg-field px-3 text-muted-foreground;
+
+    &::before {
+      @apply bg-field-hover;
+    }
+
+    &:focus-within::before {
+      opacity: 1;
+    }
 
     > input {
       @apply h-10 min-w-0 flex-1 bg-transparent text-base text-foreground outline-none placeholder:text-muted-foreground pointer-fine:text-sm;
@@ -1045,8 +1107,7 @@
   }
 
   @media (prefers-reduced-motion: reduce) {
-    .ui-select-trigger, .ui-select-icon,
-    .ui-switch-track, .ui-switch-thumb {
+    .ui-select-icon, .ui-switch-track, .ui-switch-thumb {
       transition: none;
     }
   }

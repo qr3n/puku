@@ -78,10 +78,10 @@ const MotionSheetItem = motion.create(function MotionSheetItem({
       style: { ...props.style, ...style },
       "aria-current": current,
       className: cn(
-        "ui-pressable relative flex min-h-14 w-full cursor-pointer items-center gap-4 rounded-2xl px-5 py-4 text-left text-base font-medium transition-colors outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-default disabled:opacity-50 motion-reduce:transition-none",
+        "ui-sheet-item ui-pressable relative flex min-h-14 w-full cursor-pointer items-center gap-4 rounded-2xl px-5 py-4 text-left text-base font-medium transition-[color] outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-default disabled:opacity-50 motion-reduce:transition-none",
         highlighted
           ? "text-sheet-item-active-foreground before:bg-sheet-item-active"
-          : "text-sheet-item-foreground before:bg-sheet-item hover:text-sheet-item-active-foreground hover:before:bg-sheet-item-active",
+          : "text-sheet-item-foreground before:bg-sheet-item after:bg-sheet-item-active hover:text-sheet-item-active-foreground",
         className
       ),
       children: (

@@ -115,9 +115,9 @@ export default function UIPage() {
         </div>
       </section>
       <section className="space-y-3">
-        <h2 className="text-lg font-medium">States</h2>
+        <h2 className="text-lg font-medium">Hover and press states</h2>
         <div className="flex flex-wrap items-center gap-3">
-          <Button>Press and hold</Button>
+          <Button>Hover or press and hold</Button>
           <Button disabled>Unavailable</Button>
         </div>
       </section>

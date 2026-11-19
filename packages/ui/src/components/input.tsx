@@ -55,7 +55,7 @@ export function Input({
             aria-label={showPassword ? "Скрыть пароль" : "Показать пароль"}
             disabled={disabled}
             onClick={() => setShowPassword((visible) => !visible)}
-            className="absolute inset-y-0 right-2 my-auto size-10 rounded-xl text-muted-foreground hover:text-foreground hover:before:bg-foreground/5"
+            className="absolute inset-y-0 right-2 my-auto size-10 rounded-xl text-muted-foreground after:bg-foreground/5 hover:text-foreground"
           >
             <PasswordIcon className="size-[1.125rem]" aria-hidden />
           </Button>

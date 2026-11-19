@@ -11,20 +11,20 @@ import { cn } from "cn"
 import { motion } from "framer-motion"
 
 const buttonVariants = cva(
-  "group/button relative inline-flex max-w-full shrink-0 cursor-pointer touch-manipulation items-center justify-center rounded-[1.25rem] border border-transparent bg-clip-padding text-center text-sm font-semibold [overflow-wrap:anywhere] whitespace-normal transition-[background-color,color,border-color,box-shadow,opacity,filter] duration-200 outline-none select-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 disabled:pointer-events-none disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-3 aria-invalid:ring-destructive/20 motion-reduce:transition-none dark:focus-visible:border-transparent dark:focus-visible:ring-2 dark:focus-visible:ring-white/40 dark:aria-invalid:border-error-accent dark:aria-invalid:ring-error-accent/40 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
+  "group/button relative inline-flex max-w-full shrink-0 cursor-pointer touch-manipulation items-center justify-center rounded-[1.25rem] border border-transparent bg-clip-padding text-center text-sm font-semibold [overflow-wrap:anywhere] whitespace-normal transition-[color,border-color,box-shadow,opacity,filter] duration-200 outline-none select-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 disabled:pointer-events-none disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-3 aria-invalid:ring-destructive/20 motion-reduce:transition-none dark:focus-visible:border-transparent dark:focus-visible:ring-2 dark:focus-visible:ring-white/40 dark:aria-invalid:border-error-accent dark:aria-invalid:ring-error-accent/40 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
   {
     variants: {
       variant: {
         default:
-          "text-button-primary-foreground [--shimmer-color:currentColor] before:bg-button-primary hover:before:bg-button-primary-hover dark:[--shimmer-strength:14%]",
+          "text-button-primary-foreground [--shimmer-color:currentColor] before:bg-button-primary after:bg-button-primary-hover dark:[--shimmer-strength:14%]",
         secondary:
-          "text-secondary-foreground [--shimmer-color:currentColor] before:bg-button-secondary hover:before:bg-button-secondary-hover",
+          "text-secondary-foreground [--shimmer-color:currentColor] before:bg-button-secondary after:bg-button-secondary-hover",
         tonal:
-          "text-button-tertiary-foreground before:bg-button-tertiary hover:before:bg-button-tertiary-hover",
+          "text-button-tertiary-foreground before:bg-button-tertiary after:bg-button-tertiary-hover",
         ghost:
-          "text-button-tertiary-foreground hover:before:bg-button-ghost-hover",
+          "text-button-tertiary-foreground after:bg-button-ghost-hover",
         destructive:
-          "text-error-foreground-strong before:bg-error-surface hover:before:bg-error-field-hover",
+          "text-error-foreground-strong before:bg-error-surface after:bg-error-field-hover",
       },
       size: {
         default:

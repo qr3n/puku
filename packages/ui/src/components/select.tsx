@@ -145,7 +145,7 @@ export function Select<Value extends string | number>({
                   value={option.value}
                   label={option.label}
                   disabled={option.disabled}
-                  className="ui-menu-item ui-pressable relative justify-between"
+                  className="ui-menu-item ui-pressable justify-between"
                   render={renderSelectOption}
                 >
                   <div data-press-content="">

@@ -1,8 +1,11 @@
 "use client"
 
-import { useSyncExternalStore, type CSSProperties, type Ref } from "react"
+import { type CSSProperties, type Ref } from "react"
 import { Button as ButtonPrimitive } from "@base-ui/react/button"
+import { Lottie, type LottieProps } from "@workspace/ui/components/lottie"
 import { Shimmer } from "@workspace/ui/components/shimmer"
+import { useReducedMotion } from "@workspace/ui/hooks/use-reduced-motion"
+import type { LottieName } from "@workspace/ui/lib/lottie"
 import { cva, type VariantProps } from "class-variance-authority"
 import { cn } from "cn"
 import {
@@ -57,20 +60,27 @@ const TAP_TRANSITION: Transition = {
   damping: 22,
 }
 
-const reducedMotionQuery = "(prefers-reduced-motion: reduce)"
+type ButtonLottie = LottieName | LottieProps
 
-function subscribeToReducedMotion(onChange: () => void) {
-  const media = window.matchMedia(reducedMotionQuery)
-  media.addEventListener("change", onChange)
-  return () => media.removeEventListener("change", onChange)
-}
+function ButtonAnimation({
+  animation,
+  position,
+}: {
+  animation: ButtonLottie
+  position: "inline-start" | "inline-end"
+}) {
+  const options =
+    typeof animation === "string" ? { name: animation } : animation
 
-function getReducedMotion() {
-  return window.matchMedia(reducedMotionQuery).matches
-}
-
-function getServerReducedMotion() {
-  return false
+  return (
+    <span
+      data-icon={position}
+      aria-hidden="true"
+      className="inline-flex shrink-0"
+    >
+      <Lottie size="1.2em" {...options} />
+    </span>
+  )
 }
 
 const MotionButton = motion.create(function MotionButton({
@@ -108,18 +118,20 @@ function Button({
   variant = "default",
   size = "default",
   loading = false,
+  lottieStart,
+  lottieEnd,
   disabled,
   focusableWhenDisabled,
   ref,
   ...props
 }: ButtonPrimitive.Props &
-  VariantProps<typeof buttonVariants> & { loading?: boolean }) {
+  VariantProps<typeof buttonVariants> & {
+    loading?: boolean
+    lottieStart?: ButtonLottie
+    lottieEnd?: ButtonLottie
+  }) {
   const blocked = disabled || loading
-  const reduceMotion = useSyncExternalStore(
-    subscribeToReducedMotion,
-    getReducedMotion,
-    getServerReducedMotion
-  )
+  const reduceMotion = useReducedMotion()
 
   return (
     <MotionButton
@@ -141,7 +153,18 @@ function Button({
         ),
         children: (
           <>
-            <span data-button-content="">{children}</span>
+            <span data-button-content="">
+              {lottieStart && (
+                <ButtonAnimation
+                  animation={lottieStart}
+                  position="inline-start"
+                />
+              )}
+              {lottieStart || lottieEnd ? <span>{children}</span> : children}
+              {lottieEnd && (
+                <ButtonAnimation animation={lottieEnd} position="inline-end" />
+              )}
+            </span>
             {loading && <Shimmer />}
           </>
         ),

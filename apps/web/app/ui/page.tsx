@@ -21,6 +21,7 @@ import {
   TooltipExample,
 } from "./interaction-examples"
 import { LoadingExample } from "./loading-example"
+import { LottieExample } from "./lottie-example"
 
 const variants = [
   "default",
@@ -74,6 +75,10 @@ export default function UIPage() {
             </div>
           </div>
         </div>
+      </section>
+      <section id="lottie" className="space-y-3">
+        <h2 className="text-lg font-medium">Lottie</h2>
+        <LottieExample />
       </section>
       <section className="space-y-3">
         <h2 className="text-lg font-medium">Variants</h2>

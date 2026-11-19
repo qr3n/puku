@@ -20,6 +20,30 @@ To use the components in your app, import them from the `ui` package.
 import { Button } from "@workspace/ui/components/button";
 ```
 
+## Lottie
+
+Search the collection at `/ui#lottie` and use its typed animation names.
+
+```tsx
+import { Button } from "@workspace/ui/components/button"
+import { Lottie, LottieSkeleton } from "@workspace/ui/components/lottie"
+
+<Lottie name="party-popper" size={48} loop label="Celebration" />
+<LottieSkeleton name="party-popper" size={48} />
+<Button lottieStart="sparkles">Continue</Button>
+<Button lottieEnd={{ name: "waving-hand", size: 24, loop: true }}>Say hello</Button>
+```
+
+`Lottie` plays once by default. Use `autoplay={false}` to hold the first
+frame. The shimmer follows a WebP preview rendered from frame zero, then
+crossfades into the animation. The preview also serves as the static image
+when reduced motion is enabled or loading fails.
+
+The optimized collection lives in `packages/ui/assets/lottie` and the web app
+serves it at `/api/lottie`. To use a custom self-contained Lottie JSON file, pass
+`asset={{ src: "/custom.json", firstFrame: "/custom.webp" }}` to either
+component or pass the same option in a button slot.
+
 ## Typography
 
 The web app loads Onest for UI text and headings, with Latin and Cyrillic

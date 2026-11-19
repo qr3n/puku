@@ -196,6 +196,7 @@ export function OverlayExamples() {
           Drawer
         </DrawerTrigger>
         <DrawerContent
+          keepMounted
           header={
             <OverlayHeader>
               <DrawerTitle>Quick note</DrawerTitle>

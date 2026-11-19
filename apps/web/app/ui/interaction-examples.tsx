@@ -164,6 +164,7 @@ export function SelectExample() {
 export function SearchableSelectExample() {
   return (
     <SearchableSelect
+      filterInWorker
       className="max-w-xs"
       name="office"
       label="Office"

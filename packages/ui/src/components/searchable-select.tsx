@@ -2,6 +2,7 @@
 
 import { useOverlayHistoryProps } from "@workspace/ui/hooks/use-overlay-history"
 import {
+  useEffect,
   useImperativeHandle,
   useMemo,
   useRef,
@@ -27,6 +28,7 @@ type SearchableSelectProps<Value> = Pick<
   | "value"
   | "defaultValue"
   | "onValueChange"
+  | "onInputValueChange"
   | "disabled"
   | "required"
 > &
@@ -37,6 +39,10 @@ type SearchableSelectProps<Value> = Pick<
   > &
   FieldTextProps & {
     options: readonly SelectOption<Value>[]
+    /** Filter a large local collection in a dedicated worker. */
+    filterInWorker?: boolean
+    /** Results from an external search. Keep the full collection in options for selection and typeahead. */
+    filteredOptions?: readonly SelectOption<Value>[]
     placeholder?: ReactNode
     searchPlaceholder?: string
     searchLabel?: string
@@ -45,12 +51,84 @@ type SearchableSelectProps<Value> = Pick<
   }
 
 const optionHeight = 44
+
+function useOptionSearch<Value>(
+  options: readonly SelectOption<Value>[],
+  query: string,
+  enabled: boolean
+) {
+  const worker = useRef<Worker | null>(null)
+  const [unavailable, setUnavailable] = useState(false)
+  const [result, setResult] = useState<{
+    source: typeof options
+    query: string
+    matches: SelectOption<Value>[]
+  } | null>(null)
+  if (result && (!query || result.source !== options || !enabled)) {
+    setResult(null)
+  }
+
+  useEffect(() => {
+    if (!enabled || unavailable) return
+    let instance: Worker | undefined
+    try {
+      instance = new Worker(
+        new URL("./searchable-select.worker.ts", import.meta.url),
+        {
+          type: "module",
+        }
+      )
+      instance.onerror = () => setUnavailable(true)
+      instance.postMessage(options.map((option) => option.label))
+      worker.current = instance
+    } catch {
+      // Worker creation can be blocked by the embedding application's CSP.
+      setUnavailable(true)
+    }
+    return () => {
+      worker.current = null
+      if (instance) {
+        instance.onerror = null
+        instance.terminate()
+      }
+    }
+  }, [enabled, options, unavailable])
+
+  useEffect(() => {
+    const instance = worker.current
+    if (!instance || !query) return
+    instance.onmessage = (
+      event: MessageEvent<{ query: string; indexes: number[] }>
+    ) => {
+      if (event.data.query === query) {
+        setResult({
+          source: options,
+          query,
+          matches: event.data.indexes.map((index) => options[index]!),
+        })
+      }
+    }
+    instance.postMessage(query)
+    return () => {
+      instance.onmessage = null
+    }
+  }, [enabled, options, query, unavailable])
+
+  const searching = enabled && !unavailable && Boolean(query)
+  return {
+    matches: searching ? (result?.matches ?? options) : undefined,
+    busy: searching && result?.query !== query,
+  }
+}
+
 type SearchableSelectListActions = {
   highlight: (index: number | null, scroll: boolean) => void
 }
 
 export function SearchableSelect<Value extends string | number>({
   options,
+  filteredOptions,
+  filterInWorker = false,
   id,
   label,
   helperText,
@@ -64,6 +142,7 @@ export function SearchableSelect<Value extends string | number>({
   align = "start",
   disabled,
   onValueChange,
+  onInputValueChange,
   "aria-label": ariaLabel,
   "aria-describedby": ariaDescribedBy,
   "aria-invalid": ariaInvalid,
@@ -73,6 +152,12 @@ export function SearchableSelect<Value extends string | number>({
     {}
   )
   const listActions = useRef<SearchableSelectListActions | null>(null)
+  const [query, setQuery] = useState("")
+  const search = useOptionSearch(
+    options,
+    query,
+    filterInWorker && filteredOptions === undefined
+  )
   const items = useMemo(
     () =>
       Combobox.createItems(options, {
@@ -88,12 +173,20 @@ export function SearchableSelect<Value extends string | number>({
       {...history}
       id={id}
       items={items}
+      filteredItems={filteredOptions ?? search.matches}
       disabled={disabled || options.length === 0}
       virtualized
       autoHighlight
+      onInputValueChange={(inputValue, details) => {
+        onInputValueChange?.(inputValue, details)
+        if (!details.isCanceled) {
+          setQuery(details.reason === "input-change" ? inputValue.trim() : "")
+        }
+      }}
       onValueChange={(value, details) => {
         // Closed-trigger typeahead can select a value without mounting its item.
         if (
+          search.busy ||
           options.find((option) => Object.is(option.value, value))?.disabled
         ) {
           details.cancel()
@@ -156,10 +249,15 @@ export function SearchableSelect<Value extends string | number>({
                 placeholder={searchPlaceholder}
               />
             </div>
-            <Combobox.Empty className="px-3 py-2 text-sm text-muted-foreground">
-              {emptyMessage}
-            </Combobox.Empty>
-            <SearchableSelectList<Value> actionsRef={listActions} />
+            {!search.busy && (
+              <Combobox.Empty className="px-3 py-2 text-sm text-muted-foreground">
+                {emptyMessage}
+              </Combobox.Empty>
+            )}
+            <SearchableSelectList<Value>
+              actionsRef={listActions}
+              busy={search.busy}
+            />
           </Combobox.Popup>
         </Combobox.Positioner>
       </Combobox.Portal>
@@ -169,8 +267,10 @@ export function SearchableSelect<Value extends string | number>({
 
 function SearchableSelectList<Value extends string | number>({
   actionsRef,
+  busy,
 }: {
   actionsRef: RefObject<SearchableSelectListActions | null>
+  busy: boolean
 }) {
   const items = Combobox.useFilteredItems<SelectOption<Value>>()
   const scrollRef = useRef<HTMLDivElement>(null)
@@ -209,7 +309,11 @@ function SearchableSelectList<Value extends string | number>({
   )
 
   return (
-    <Combobox.List ref={scrollRef} className="ui-searchable-select-list">
+    <Combobox.List
+      ref={scrollRef}
+      aria-busy={busy || undefined}
+      className="ui-searchable-select-list"
+    >
       {items.length > 0 && (
         <div
           role="presentation"

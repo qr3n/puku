@@ -59,11 +59,25 @@ export function UIProvider({
     if (!element) return
 
     const syncScroll = () => {
-      element.style.setProperty("--drawer-page-scroll", `${window.scrollY}px`)
+      const offset = window.scrollY + document.body.scrollTop
+      element.style.setProperty("--drawer-page-scroll", `${offset}px`)
     }
-    syncScroll()
-    window.addEventListener("scroll", syncScroll, { passive: true })
-    return () => window.removeEventListener("scroll", syncScroll)
+    const syncActive = () => {
+      if (element.hasAttribute("data-active")) {
+        syncScroll()
+        // Non-modal drawers still allow the page to scroll.
+        window.addEventListener("scroll", syncScroll, { passive: true })
+      } else {
+        window.removeEventListener("scroll", syncScroll)
+      }
+    }
+    const observer = new MutationObserver(syncActive)
+    observer.observe(element, { attributeFilter: ["data-active"] })
+    syncActive()
+    return () => {
+      observer.disconnect()
+      window.removeEventListener("scroll", syncScroll)
+    }
   }, [])
 
   return (

@@ -47,6 +47,8 @@ export const DrawerDescription = Primitive.Description
 type DrawerContentProps = Omit<Primitive.Popup.Props, "className"> & {
   className?: string
   side?: "bottom" | "right"
+  /** Mount the panel before its first open and preserve its contents between visits. */
+  keepMounted?: boolean
   /** Stays above the scrolling body. May include Cancel and Done in an editor. */
   header?: ReactNode
 }
@@ -54,12 +56,13 @@ type DrawerContentProps = Omit<Primitive.Popup.Props, "className"> & {
 export function DrawerContent({
   side = "bottom",
   className,
+  keepMounted,
   header,
   children,
   ...props
 }: DrawerContentProps) {
   return (
-    <Primitive.Portal>
+    <Primitive.Portal keepMounted={keepMounted}>
       <Primitive.Backdrop
         className={cn(
           "ui-overlay-backdrop",

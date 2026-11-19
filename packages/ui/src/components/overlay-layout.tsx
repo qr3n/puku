@@ -23,6 +23,13 @@ type OverlayActionsProps = {
   secondary?: ReactElement
 }
 
+// Motion writes this visual-only property for every frame of a button press.
+function layoutStyle(style: string | null) {
+  return (
+    style?.replace(/(^|;)\s*--button-press-scale:[^;]*;?/, "$1").trim() ?? ""
+  )
+}
+
 export function OverlayActions({ primary, secondary }: OverlayActionsProps) {
   const group = useRef<HTMLDivElement>(null)
   const [row, setRow] = useState(false)
@@ -47,11 +54,20 @@ export function OverlayActions({ primary, secondary }: OverlayActionsProps) {
     updateLayout()
     const resize = new ResizeObserver(updateLayout)
     resize.observe(container)
-    const labels = new MutationObserver(updateLayout)
+    const labels = new MutationObserver((changes) => {
+      const needsMeasurement = changes.some(
+        (change) =>
+          change.attributeName !== "style" ||
+          layoutStyle(change.oldValue) !==
+            layoutStyle((change.target as Element).getAttribute("style"))
+      )
+      if (needsMeasurement) updateLayout()
+    })
     labels.observe(container, {
       childList: true,
       characterData: true,
       subtree: true,
+      attributeOldValue: true,
       attributeFilter: ["class", "style", "hidden"],
     })
     wide.addEventListener("change", updateLayout)

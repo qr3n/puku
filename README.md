@@ -44,6 +44,48 @@ serves it at `/api/lottie`. To use a custom self-contained Lottie JSON file, pas
 `asset={{ src: "/custom.json", firstFrame: "/custom.webp" }}` to either
 component or pass the same option in a button slot.
 
+## Media
+
+`MediaImage` and `MediaVideo` render native media elements and show a shimmer
+while they load. Omit `mask` for a rectangular frame or pass your own SVG path
+or SVG file URL. The same mask applies to the media, shimmer, and optional
+`fallback` on load error. See the examples at `/ui#media`.
+
+```tsx
+import { MediaImage, MediaVideo } from "@workspace/ui/components/media"
+import { MediaSkeleton, type MediaMask } from "@workspace/ui/components/media-frame"
+
+const mask = {
+  viewBox: [0, 0, 240, 160],
+  path: "M0 160V80a120 80 0 0 1 240 0v80Z",
+} satisfies MediaMask
+
+export function MediaExample() {
+  return (
+    <>
+      <MediaImage src="/photo.webp" alt="Waves on the coast" width={600} height={400} />
+      <MediaVideo src="/clip.mp4" mask={mask} controls aria-label="Coast clip" />
+      <MediaSkeleton mask={mask} />
+      <MediaSkeleton mask="/my-shape.svg" aspectRatio="3 / 2" />
+    </>
+  )
+}
+```
+
+The frame reserves space on the server. It uses `aspectRatio` first, then
+the path mask's `viewBox`, then the media's `width` and `height`. Default
+ratios are square for images and `16 / 9` for video and standalone frames.
+For an SVG file URL, set `aspectRatio` to the SVG's `viewBox` ratio if needed.
+An SVG file uses its transparency as the mask. Host it on the same origin or
+serve it with CORS headers that allow the app's origin.
+An inline path uses a `data:` URL. If the app's CSP restricts `img-src`, allow
+`data:` or use a hosted SVG.
+
+Use `className` for the frame and `mediaClassName` for the native element.
+Media fills the frame with `object-fit: cover` by default. Pass
+`mediaClassName="object-contain"` to keep the entire image or video visible.
+`MediaFrame` is also available for masking custom content.
+
 ## Typography
 
 The web app loads Onest for UI text and headings, with Latin and Cyrillic

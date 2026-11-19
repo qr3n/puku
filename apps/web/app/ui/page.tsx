@@ -22,6 +22,7 @@ import {
 } from "./interaction-examples"
 import { LoadingExample } from "./loading-example"
 import { LottieExample } from "./lottie-example"
+import { MediaExamples } from "./media-examples"
 
 const variants = [
   "default",
@@ -75,6 +76,10 @@ export default function UIPage() {
             </div>
           </div>
         </div>
+      </section>
+      <section id="media" className="space-y-3">
+        <h2 className="text-lg font-medium">Media</h2>
+        <MediaExamples />
       </section>
       <section id="lottie" className="space-y-3">
         <h2 className="text-lg font-medium">Lottie</h2>

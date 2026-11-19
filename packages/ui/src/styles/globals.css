@@ -154,7 +154,8 @@
     --surface-elevated: var(--card);
     --surface-overlay: var(--background);
     --drawer-indent-background: var(--color-zinc-950);
-    --drawer-transition: 300ms cubic-bezier(0.32, 0.72, 0, 1);
+    --drawer-easing: cubic-bezier(0.32, 0.72, 0, 1);
+    --drawer-transition: 300ms var(--drawer-easing);
     --toast-surface: var(--color-zinc-100);
     --toast-success: #5aff00;
     --toast-error: #ff303c;
@@ -559,6 +560,10 @@
   .ui-confirm-backdrop {
     transition-duration: 220ms;
 
+    &:not([data-ending-style]) {
+      transition-timing-function: var(--drawer-easing);
+    }
+
     &[data-ending-style] {
       transition-duration: 175ms;
     }
@@ -659,15 +664,11 @@
   }
 
   .ui-centered-panel {
-    --panel-enter-duration: 340ms;
+    --panel-enter-transition: var(--drawer-transition);
     --panel-enter-offset: 1.5rem;
     --panel-enter-scale: 0.78;
     @apply max-h-full w-full max-w-lg rounded-[2rem] p-6 shadow-(--modal-shadow);
-    transition: transform var(--panel-enter-duration) cubic-bezier(0.22, 0.82, 0.28, 1.08), opacity 120ms ease-out;
-    /* Let the panel settle with a small overshoot while opacity rises steadily. */
-    transition-timing-function:
-      var(--overlay-enter-easing),
-      ease-out;
+    transition: transform var(--panel-enter-transition), opacity 120ms ease-out;
 
     &[data-starting-style] {
       transform: translateY(var(--panel-enter-offset)) scale(var(--panel-enter-scale));
@@ -682,7 +683,7 @@
   }
 
   .ui-confirm-panel {
-    --panel-enter-duration: 280ms;
+    --panel-enter-transition: 240ms var(--drawer-easing);
     --panel-enter-offset: 0.875rem;
     --panel-enter-scale: 0.84;
     @apply max-w-sm rounded-[1.75rem] p-5 shadow-(--confirm-shadow);
@@ -706,13 +707,13 @@
   }
 
   .ui-floating-panel {
-    --floating-enter-duration: 280ms;
+    --floating-enter-transition: 220ms var(--drawer-easing);
     --floating-enter-scale: 0.9;
     @apply bg-surface-elevated text-foreground shadow-xl ring-1 ring-border outline-none;
     transform-origin: var(--transform-origin);
 
     @media (prefers-reduced-motion: no-preference) {
-      transition: transform var(--floating-enter-duration) var(--overlay-enter-easing), opacity 120ms ease-out;
+      transition: transform var(--floating-enter-transition), opacity 120ms ease-out;
 
       &[data-starting-style] {
         transform: scale(var(--floating-enter-scale));
@@ -861,7 +862,7 @@
   }
 
   .ui-tooltip-content {
-    --floating-enter-duration: 200ms;
+    --floating-enter-transition: 200ms var(--overlay-enter-easing);
     --floating-enter-scale: 0.94;
     @apply w-max rounded-xl px-3 py-2 text-sm leading-snug;
     max-width: min(16rem, var(--available-width, calc(100vw - 1rem)));

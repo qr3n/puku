@@ -1,10 +1,15 @@
 "use client"
 
-import { useEffect, useRef, useState } from "react"
+import { useSyncExternalStore, type CSSProperties, type Ref } from "react"
 import { Button as ButtonPrimitive } from "@base-ui/react/button"
 import { Shimmer } from "@workspace/ui/components/shimmer"
 import { cva, type VariantProps } from "class-variance-authority"
 import { cn } from "cn"
+import {
+  motion,
+  type TargetAndTransition,
+  type Transition,
+} from "framer-motion"
 
 const buttonVariants = cva(
   "group/button relative inline-flex max-w-full shrink-0 cursor-pointer touch-manipulation items-center justify-center rounded-[1.25rem] border border-transparent bg-clip-padding text-center text-sm font-semibold [overflow-wrap:anywhere] whitespace-normal transition-[background-color,color,border-color,box-shadow,opacity,filter] duration-200 outline-none select-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 disabled:pointer-events-none disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-3 aria-invalid:ring-destructive/20 motion-reduce:transition-none dark:focus-visible:border-transparent dark:focus-visible:ring-2 dark:focus-visible:ring-white/40 dark:aria-invalid:border-error-accent dark:aria-invalid:ring-error-accent/40 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
@@ -44,6 +49,59 @@ const buttonVariants = cva(
   }
 )
 
+const REST_SCALE: TargetAndTransition = { "--button-press-scale": 1 }
+const TAP_SCALE: TargetAndTransition = { "--button-press-scale": 0.96 }
+const TAP_TRANSITION: Transition = {
+  type: "spring",
+  stiffness: 400,
+  damping: 22,
+}
+
+const reducedMotionQuery = "(prefers-reduced-motion: reduce)"
+
+function subscribeToReducedMotion(onChange: () => void) {
+  const media = window.matchMedia(reducedMotionQuery)
+  media.addEventListener("change", onChange)
+  return () => media.removeEventListener("change", onChange)
+}
+
+function getReducedMotion() {
+  return window.matchMedia(reducedMotionQuery).matches
+}
+
+function getServerReducedMotion() {
+  return false
+}
+
+const MotionButton = motion.create(function MotionButton({
+  buttonProps,
+  loading,
+  style,
+  ref,
+}: {
+  buttonProps: ButtonPrimitive.Props
+  loading: boolean
+  style?: CSSProperties
+  ref?: Ref<HTMLElement>
+}) {
+  const { style: buttonStyle, ...props } = buttonProps
+
+  return (
+    <ButtonPrimitive
+      {...props}
+      ref={ref}
+      data-slot="button"
+      data-loading={loading || undefined}
+      style={(state) => ({
+        ...(typeof buttonStyle === "function"
+          ? buttonStyle(state)
+          : buttonStyle),
+        ...style,
+      })}
+    />
+  )
+})
+
 function Button({
   className,
   children,
@@ -52,124 +110,43 @@ function Button({
   loading = false,
   disabled,
   focusableWhenDisabled,
-  onPointerDown,
-  onPointerLeave,
-  onLostPointerCapture,
+  ref,
   ...props
 }: ButtonPrimitive.Props &
   VariantProps<typeof buttonVariants> & { loading?: boolean }) {
-  const [pressed, setPressed] = useState(false)
-  const gesture = useRef<{
-    controller: AbortController
-    pointerId: number
-    releaseTimer?: ReturnType<typeof setTimeout>
-  } | null>(null)
   const blocked = disabled || loading
-
-  function resetPress() {
-    const current = gesture.current
-    if (!current) return
-    current.controller.abort()
-    clearTimeout(current.releaseTimer)
-    gesture.current = null
-    setPressed(false)
-  }
-
-  useEffect(
-    () => () => {
-      gesture.current?.controller.abort()
-      clearTimeout(gesture.current?.releaseTimer)
-    },
-    []
+  const reduceMotion = useSyncExternalStore(
+    subscribeToReducedMotion,
+    getReducedMotion,
+    getServerReducedMotion
   )
 
-  useEffect(() => {
-    if (blocked && gesture.current?.releaseTimer === undefined) resetPress()
-  }, [blocked])
-
   return (
-    <ButtonPrimitive
-      {...props}
-      data-slot="button"
-      data-pressed={pressed || undefined}
-      data-loading={loading || undefined}
-      aria-busy={loading || props["aria-busy"]}
-      disabled={blocked}
-      focusableWhenDisabled={focusableWhenDisabled || (loading && !disabled)}
-      onPointerDown={(event) => {
-        onPointerDown?.(event)
-        if (
-          !event.defaultPrevented &&
-          !blocked &&
-          event.isPrimary &&
-          event.button === 0
-        ) {
-          resetPress()
-          const controller = new AbortController()
-          const pointerId = event.pointerId
-          const current: NonNullable<typeof gesture.current> = {
-            controller,
-            pointerId,
-          }
-          const pressedAt = performance.now()
-          gesture.current = current
-          const options = { capture: true, signal: controller.signal }
-          window.addEventListener(
-            "pointerup",
-            (release) => {
-              if (
-                release.pointerId !== pointerId ||
-                current.releaseTimer !== undefined
-              )
-                return
-              // Keep quick taps visible through the press transition.
-              current.releaseTimer = setTimeout(
-                resetPress,
-                Math.max(0, 100 - (performance.now() - pressedAt))
-              )
-            },
-            options
-          )
-          window.addEventListener(
-            "pointercancel",
-            (cancel) => {
-              if (cancel.pointerId === pointerId) resetPress()
-            },
-            options
-          )
-          window.addEventListener("blur", resetPress, {
-            signal: controller.signal,
-          })
-          setPressed(true)
-        }
+    <MotionButton
+      ref={ref}
+      loading={loading}
+      initial={false}
+      animate={REST_SCALE}
+      whileTap={blocked || reduceMotion ? undefined : TAP_SCALE}
+      transition={TAP_TRANSITION}
+      buttonProps={{
+        ...props,
+        "aria-busy": loading || props["aria-busy"],
+        disabled: blocked,
+        focusableWhenDisabled: focusableWhenDisabled || (loading && !disabled),
+        className: cn(
+          buttonVariants({ variant, size }),
+          loading && "cursor-default brightness-90 disabled:opacity-100",
+          className
+        ),
+        children: (
+          <>
+            <span data-button-content="">{children}</span>
+            {loading && <Shimmer />}
+          </>
+        ),
       }}
-      onPointerLeave={(event) => {
-        onPointerLeave?.(event)
-        if (
-          event.pointerId === gesture.current?.pointerId &&
-          gesture.current.releaseTimer === undefined
-        ) {
-          resetPress()
-        }
-      }}
-      onLostPointerCapture={(event) => {
-        onLostPointerCapture?.(event)
-        if (
-          event.pointerId === gesture.current?.pointerId &&
-          gesture.current.releaseTimer === undefined
-        ) {
-          resetPress()
-        }
-      }}
-      className={cn(
-        buttonVariants({ variant, size }),
-        loading && "cursor-default brightness-90 disabled:opacity-100",
-        className
-      )}
-    >
-      <span data-button-content="">{children}</span>
-      {loading && <Shimmer />}
-    </ButtonPrimitive>
+    />
   )
 }
 

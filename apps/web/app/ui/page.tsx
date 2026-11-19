@@ -112,6 +112,7 @@ export default function UIPage() {
       <section className="space-y-3">
         <h2 className="text-lg font-medium">States</h2>
         <div className="flex flex-wrap items-center gap-3">
+          <Button>Press and hold</Button>
           <Button disabled>Unavailable</Button>
         </div>
       </section>

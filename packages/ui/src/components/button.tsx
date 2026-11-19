@@ -17,7 +17,7 @@ const buttonVariants = cva(
     variants: {
       variant: {
         default:
-          "text-button-primary-foreground [--shimmer-color:currentColor] before:bg-button-primary hover:before:bg-button-primary-hover",
+          "text-button-primary-foreground [--shimmer-color:currentColor] before:bg-button-primary hover:before:bg-button-primary-hover dark:[--shimmer-strength:14%]",
         secondary:
           "text-secondary-foreground [--shimmer-color:currentColor] before:bg-button-secondary hover:before:bg-button-secondary-hover",
         tonal:

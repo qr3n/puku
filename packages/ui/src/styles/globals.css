@@ -584,14 +584,18 @@
 
   .ui-drawer-panel,
   .ui-centered-panel {
-    @apply overflow-y-auto overscroll-contain bg-surface-overlay text-foreground shadow-2xl ring-1 ring-border outline-none motion-reduce:transition-none;
+    @apply overflow-y-auto overscroll-contain bg-surface-overlay text-foreground shadow-2xl outline-none motion-reduce:transition-none;
   }
 
   .ui-drawer-panel {
-    @apply max-h-[90dvh] w-full max-w-md rounded-t-[2rem] px-4 pt-4 dark:shadow-none dark:ring-0;
+    @apply max-h-[90dvh] w-full max-w-md rounded-t-[2rem] px-4 pt-4 dark:shadow-none;
     padding-bottom: max(1rem, env(safe-area-inset-bottom));
     transform: translateY(var(--drawer-swipe-movement-y, 0px));
     transition: transform var(--drawer-transition);
+
+    &:not(.ui-sheet-panel) {
+      @apply ring-1 ring-border dark:ring-0;
+    }
 
     &[data-swiping] {
       transition-duration: 0ms;
@@ -603,7 +607,7 @@
   }
 
   .ui-sheet-panel {
-    @apply h-full max-h-none w-80 max-w-[86vw] rounded-none p-5 dark:ring-1;
+    @apply h-full max-h-none w-80 max-w-[86vw] rounded-none p-5;
     padding-right: max(1.25rem, env(safe-area-inset-right));
     padding-bottom: max(1.25rem, calc(1rem + env(safe-area-inset-bottom)));
     transform: translateX(var(--drawer-swipe-movement-x, 0px));

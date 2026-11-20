@@ -11,7 +11,6 @@ import {
   OverlayExamples,
   StepperExample,
 } from "./component-examples"
-import { ConnectionDiagramExample } from "./connection-diagram-example"
 import {
   CheckboxExample,
   MenuExample,
@@ -69,7 +68,6 @@ export default function UIPage() {
         </div>
       </section>
       <TextAnimationExamples />
-      <ConnectionDiagramExample />
       <LocationSelectionDiagramExample />
       <section className="space-y-3">
         <h2 className="text-lg font-medium">Skeleton</h2>

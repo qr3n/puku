@@ -1,6 +1,6 @@
 export type ConnectionSide =
   "auto" | "top" | "right" | "bottom" | "left" | "center"
-export type ConnectionShape = "straight" | "curve" | "elbow" | "stepped"
+export type ConnectionShape = "stepped" | "curve"
 
 export type ConnectionStep = {
   /** Length in pixels of the first horizontal segment. Omit to size it to the route. */
@@ -152,6 +152,18 @@ function elbowCandidates(a: Point, b: Point): Point[][] {
 function elbowLeg(from: Port, to: Port) {
   const start = from.point
   const end = to.point
+  const travel = delta(start, end)
+  if (
+    from.direction &&
+    to.direction &&
+    dot(from.direction, to.direction) === -1
+  ) {
+    const lead = dot(travel, from.direction)
+    // Grid layout can place visually aligned anchors a fraction of a pixel apart.
+    const cross = from.direction.x * travel.y - from.direction.y * travel.x
+    if (lead > 0 && Math.abs(cross) < 0.05) return [start, end]
+  }
+
   const startLead = from.direction
     ? move(start, from.direction, elbowClearance)
     : start
@@ -288,7 +300,7 @@ export type ConnectionRoute = {
 
 export function getConnectionPath(
   layout: ConnectionLayout,
-  { from, to, via = [], shape = "elbow", radius = 14, step }: ConnectionRoute
+  { from, to, via = [], shape = "stepped", radius = 14, step }: ConnectionRoute
 ) {
   const references = [from, ...via, to]
   const locations = references.map((reference) => {
@@ -329,19 +341,11 @@ export function getConnectionPath(
   }
 
   if (shape === "curve") return curvePath(ports)
-  if (shape === "straight")
-    return roundedPath(
-      ports.map(({ point }) => point),
-      0
-    )
 
-  const points = ports.slice(1).flatMap((port, index) => {
-    const leg = elbowLeg(ports[index]!, port)
-    return shape === "stepped" ? steppedLeg(leg, step) : leg
-  })
+  const points = ports
+    .slice(1)
+    .flatMap((port, index) => steppedLeg(elbowLeg(ports[index]!, port), step))
   // Leave a straight section between adjacent curves on automatic steps.
-  const autoStep =
-    shape === "stepped" &&
-    (step?.lead === undefined || step.position === undefined)
+  const autoStep = step?.lead === undefined || step.position === undefined
   return roundedPath(compact(points), radius, autoStep ? 1 / 3 : 0.5)
 }

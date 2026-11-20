@@ -91,7 +91,8 @@ Media fills the frame with `object-fit: cover` by default. Pass
 Use `ConnectionDiagram` to draw static lines between existing elements. Mark
 each node with a unique `data-connection-node` inside the diagram and pass the
 connections as an array. The diagram measures the nodes as the layout changes.
-See the branching example and shape controls at `/ui#connection-diagram`.
+The location selection example at `/ui#location-selection-diagram` shows both
+shapes, a highlighted primary route, and a toggle for the dashed backup route.
 
 ```tsx
 import { ConnectionDiagram } from "@workspace/ui/components/connection-diagram"
@@ -102,7 +103,7 @@ import { ConnectionDiagram } from "@workspace/ui/components/connection-diagram"
     {
       from: "client",
       to: { node: "server", side: "left" },
-      shape: "elbow",
+      shape: "stepped",
       radius: 16,
     },
   ]}
@@ -114,7 +115,7 @@ import { ConnectionDiagram } from "@workspace/ui/components/connection-diagram"
 
 A string endpoint chooses its side automatically. To position a line along an
 edge, use `side` with `offset` from 0 to 1, measured left to right or top to
-bottom. `shape` accepts `elbow` (the default), `stepped`, `curve`, or `straight`.
+bottom. `shape` accepts `stepped` (the default) or `curve`.
 Add `via` with node IDs or points such as `{ x: 0.2, y: 0.5 }` to guide a line
 around other elements. Point coordinates are fractions of the diagram's width
 and height.
@@ -124,6 +125,7 @@ lines with `className`, `stroke`, `strokeWidth`, or `strokeDasharray`.
 Use `shape: "stepped"` for the decorative ledge on the outer branches of the
 catalog example. It turns a single right-angle bend into three rounded turns.
 Connect a `left` or `right` anchor to a `top` or `bottom` anchor for this layout.
+Facing anchors on the same horizontal or vertical axis connect directly.
 By default the lead scales with the horizontal and vertical gaps, and the ledge
 sits 56% of the way from the horizontal anchor to the vertical anchor. Corner
 radii shrink on short segments to leave a visible straight section between bends.

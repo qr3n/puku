@@ -12,6 +12,7 @@ import {
   MenuSeparator,
   MenuTrigger,
 } from "@workspace/ui/components/menu"
+import { RadioGroup, RadioGroupItem } from "@workspace/ui/components/radio-group"
 import { SearchableSelect } from "@workspace/ui/components/searchable-select"
 import { Select } from "@workspace/ui/components/select"
 import { Switch } from "@workspace/ui/components/switch"
@@ -131,6 +132,26 @@ export function CheckboxExample() {
         </div>
       </CheckboxGroup>
       <Checkbox label="System alerts" defaultChecked disabled />
+    </div>
+  )
+}
+
+export function RadioGroupExample() {
+  return (
+    <div>
+      <p id="appearance-label" className="text-sm font-semibold">
+        Appearance
+      </p>
+      <RadioGroup
+        aria-labelledby="appearance-label"
+        name="appearance"
+        defaultValue="system"
+      >
+        <RadioGroupItem value="system" label="System" />
+        <RadioGroupItem value="light" label="Light" />
+        <RadioGroupItem value="dark" label="Dark" />
+        <RadioGroupItem value="high-contrast" label="High contrast" disabled />
+      </RadioGroup>
     </div>
   )
 }

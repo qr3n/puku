@@ -78,6 +78,7 @@ export function DrawerContent({
         <Primitive.Popup
           {...props}
           data-fixed-header={header ? "" : undefined}
+          data-stack-actions={side === "bottom" ? "" : undefined}
           className={cn(
             "ui-drawer-panel",
             side === "right" && "ui-sheet-panel",

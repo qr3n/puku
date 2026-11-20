@@ -11,9 +11,11 @@ import {
   OverlayExamples,
   StepperExample,
 } from "./component-examples"
+import { ConnectionDiagramExample } from "./connection-diagram-example"
 import {
   CheckboxExample,
   MenuExample,
+  RadioGroupExample,
   SearchableSelectExample,
   SelectExample,
   SwitchExample,
@@ -21,8 +23,10 @@ import {
   TooltipExample,
 } from "./interaction-examples"
 import { LoadingExample } from "./loading-example"
+import { LocationSelectionDiagramExample } from "./location-selection-diagram-example"
 import { LottieExample } from "./lottie-example"
 import { MediaExamples } from "./media-examples"
+import { TextAnimationExamples } from "./text-animation-examples"
 
 const variants = [
   "default",
@@ -64,6 +68,9 @@ export default function UIPage() {
           ))}
         </div>
       </section>
+      <TextAnimationExamples />
+      <ConnectionDiagramExample />
+      <LocationSelectionDiagramExample />
       <section className="space-y-3">
         <h2 className="text-lg font-medium">Skeleton</h2>
         <div className="grid max-w-sm gap-4 rounded-2xl border p-4">
@@ -175,6 +182,10 @@ export default function UIPage() {
       <section id="checkbox" className="space-y-3">
         <h2 className="text-lg font-medium">Checkbox</h2>
         <CheckboxExample />
+      </section>
+      <section id="radio-group" className="space-y-3">
+        <h2 className="text-lg font-medium">Radio Group</h2>
+        <RadioGroupExample />
       </section>
       <section id="select" className="space-y-3">
         <h2 className="text-lg font-medium">Select</h2>

@@ -86,6 +86,51 @@ Media fills the frame with `object-fit: cover` by default. Pass
 `mediaClassName="object-contain"` to keep the entire image or video visible.
 `MediaFrame` is also available for masking custom content.
 
+## Connection Diagram
+
+Use `ConnectionDiagram` to draw static lines between existing elements. Mark
+each node with a unique `data-connection-node` inside the diagram and pass the
+connections as an array. The diagram measures the nodes as the layout changes.
+See the branching example and shape controls at `/ui#connection-diagram`.
+
+```tsx
+import { ConnectionDiagram } from "@workspace/ui/components/connection-diagram"
+
+<ConnectionDiagram
+  className="grid min-h-44 grid-cols-2 items-center justify-items-center"
+  connections={[
+    {
+      from: "client",
+      to: { node: "server", side: "left" },
+      shape: "elbow",
+      radius: 16,
+    },
+  ]}
+>
+  <div data-connection-node="client">Client</div>
+  <div data-connection-node="server">Server</div>
+</ConnectionDiagram>
+```
+
+A string endpoint chooses its side automatically. To position a line along an
+edge, use `side` with `offset` from 0 to 1, measured left to right or top to
+bottom. `shape` accepts `elbow` (the default), `stepped`, `curve`, or `straight`.
+Add `via` with node IDs or points such as `{ x: 0.2, y: 0.5 }` to guide a line
+around other elements. Point coordinates are fractions of the diagram's width
+and height.
+Reuse an endpoint in several connections to create branches. Style individual
+lines with `className`, `stroke`, `strokeWidth`, or `strokeDasharray`.
+
+Use `shape: "stepped"` for the decorative ledge on the outer branches of the
+catalog example. It turns a single right-angle bend into three rounded turns.
+Connect a `left` or `right` anchor to a `top` or `bottom` anchor for this layout.
+By default the lead scales with the horizontal and vertical gaps, and the ledge
+sits 56% of the way from the horizontal anchor to the vertical anchor. Corner
+radii shrink on short segments to leave a visible straight section between bends.
+For a fixed composition, pass `step: { lead: 32, position: 0.46 }`. The lead is
+in pixels, capped at half the horizontal gap, and the position is a fraction of
+the vertical gap. Supplying both values uses the standard corner rounding.
+
 ## Typography
 
 The web app loads Onest for UI text and headings, with Latin and Cyrillic

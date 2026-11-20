@@ -97,6 +97,7 @@
     --secondary-foreground: oklch(0.205 0 0);
     --muted: oklch(0.97 0 0);
     --muted-foreground: oklch(0.556 0 0);
+    --scroll-reveal-muted-foreground: color-mix(in oklab, var(--muted-foreground), var(--background) 2.5%);
     --shimmer-foreground: var(--color-black);
     --accent: oklch(0.97 0 0);
     --accent-foreground: oklch(0.205 0 0);
@@ -158,7 +159,6 @@
     --drawer-indent-background: var(--color-zinc-950);
     --drawer-easing: cubic-bezier(0.32, 0.72, 0, 1);
     --drawer-transition: 300ms var(--drawer-easing);
-    --toast-surface: var(--color-zinc-100);
     --toast-success: #5aff00;
     --toast-error: #ff303c;
     --toast-status-foreground: var(--color-black);
@@ -182,6 +182,7 @@
     --secondary-foreground: #fff;
     --muted: var(--color-zinc-900);
     --muted-foreground: var(--color-zinc-400);
+    --scroll-reveal-muted-foreground: var(--muted-foreground);
     --shimmer-foreground: var(--color-white);
     --accent: var(--color-zinc-800);
     --accent-foreground: #fff;
@@ -236,9 +237,8 @@
     --error-field: #2b2223;
     --error-field-hover: #322627;
     --surface-elevated: #0e0e10;
-    --surface-overlay: var(--color-zinc-950);
+    --surface-overlay: color-mix(in oklab, var(--color-zinc-950), var(--color-zinc-900));
     --drawer-indent-background: var(--color-zinc-800);
-    --toast-surface: var(--color-zinc-800);
     --modal-shadow: 0 24px 80px rgb(0 0 0 / 55%);
     --confirm-shadow: 0 24px 80px rgb(0 0 0 / 65%);
     --confirm-backdrop-opacity: 0.7;
@@ -852,6 +852,10 @@
     }
   }
 
+  [data-stack-actions] .ui-overlay-actions > * {
+    @apply w-full;
+  }
+
   .ui-confirm-panel .ui-overlay-actions[data-row]:not([data-measure]) {
     @apply justify-center;
   }
@@ -879,7 +883,7 @@
     --panel-enter-transition: 240ms var(--drawer-easing);
     --panel-enter-offset: 0.875rem;
     --panel-enter-scale: 0.84;
-    @apply max-w-sm rounded-[1.75rem] p-5 shadow-(--confirm-shadow);
+    @apply max-w-sm rounded-[1.75rem] px-4.5 py-6 shadow-(--confirm-shadow);
   }
 
   @media (prefers-reduced-motion: reduce) {
@@ -1070,7 +1074,7 @@
     overflow-wrap: anywhere;
   }
 
-  .ui-checkbox-label, .ui-switch-label {
+  .ui-checkbox-label, .ui-radio-label, .ui-switch-label {
     @apply inline-flex w-fit cursor-pointer touch-manipulation items-center gap-1 pr-2 text-sm font-medium select-none;
 
     &:has(> [data-disabled]) {
@@ -1078,7 +1082,7 @@
     }
   }
 
-  .ui-checkbox, .ui-switch {
+  .ui-checkbox, .ui-radio, .ui-switch {
     @apply inline-flex min-h-11 min-w-11 shrink-0 cursor-pointer touch-manipulation items-center justify-center rounded-lg outline-none focus-visible:ring-2 focus-visible:ring-ring;
 
     &[data-disabled] {
@@ -1130,6 +1134,26 @@
     }
   }
 
+  .ui-radio-ring {
+    @apply inline-flex size-5 shrink-0 items-center justify-center rounded-full border border-muted-foreground bg-background text-primary;
+
+    [data-checked] > & {
+      @apply border-primary;
+    }
+
+    :is([data-invalid], [aria-invalid="true"]) > & {
+      @apply border-destructive;
+    }
+  }
+
+  .ui-radio-dot {
+    @apply size-2.5 scale-0 rounded-full bg-current;
+
+    &[data-checked] {
+      @apply scale-100;
+    }
+  }
+
   .ui-checkmark {
     @apply size-3.5;
 
@@ -1152,6 +1176,10 @@
 
     .ui-checkbox-box {
       transition: scale 200ms ease, background-color 150ms ease-out, border-color 150ms ease-out;
+    }
+
+    .ui-radio-dot {
+      transition: scale 150ms ease-out;
     }
 
     :is(.ui-checkbox:active, .ui-checkbox-label:active > .ui-checkbox, [role="menuitemcheckbox"]:active):not([data-disabled], [data-readonly]) > .ui-checkbox-box {
@@ -1217,11 +1245,11 @@
   max-width: min(24rem, 100%);
   padding: 0.25rem 0.375rem 0.25rem 0.875rem;
   border-radius: 9999px;
-  background: var(--toast-surface);
+  background: var(--surface-overlay);
   color: var(--foreground);
   box-shadow: var(--shadow-xl);
   font-size: 0.875rem;
-  font-weight: 500;
+  font-weight: 600;
 }
 
 @keyframes otp-digit-in {
@@ -1243,6 +1271,74 @@
 @keyframes step-exit {
   from { transform: translateX(0); }
   to { transform: translateX(calc(-1 * var(--step-slide-offset))); }
+}
+
+@keyframes split-reveal-character {
+  from { transform: translateY(120%); }
+  to { transform: translateY(0); }
+}
+
+@layer components {
+  .ui-connection-diagram {
+    position: relative;
+    isolation: isolate;
+  }
+
+  .ui-connection-diagram-lines {
+    position: absolute;
+    z-index: -1;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    pointer-events: none;
+    stroke: color-mix(in oklab, var(--muted-foreground) 55%, transparent);
+    stroke-width: 2px;
+  }
+}
+
+@layer components {
+  @media (prefers-reduced-motion: no-preference) and (scripting: enabled) {
+    .ui-split-reveal-word,
+    .ui-split-reveal-mask,
+    .ui-split-reveal-character {
+      display: inline-block;
+    }
+
+    .ui-split-reveal-word {
+      max-width: 100%;
+    }
+
+    .ui-split-reveal-mask {
+      overflow: clip;
+      overflow-clip-margin: 0.12em;
+    }
+
+    [data-split-revealed="false"] .ui-split-reveal-character {
+      transform: translateY(120%);
+    }
+
+    [data-split-revealed="true"] .ui-split-reveal-character {
+      animation-name: split-reveal-character;
+      animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+      animation-fill-mode: backwards;
+    }
+
+    .ui-scroll-reveal-character {
+      --ui-scroll-reveal-amount: clamp(
+        0,
+        (var(--ui-scroll-reveal-progress) - var(--ui-scroll-reveal-start)) /
+          var(--ui-scroll-reveal-feather),
+        1
+      );
+      color: color-mix(
+        in oklab,
+        currentColor calc(100% * var(--ui-scroll-reveal-amount)),
+        var(--scroll-reveal-muted-foreground)
+      );
+      transition: color 180ms ease-out;
+    }
+  }
 }
 
 @layer components {

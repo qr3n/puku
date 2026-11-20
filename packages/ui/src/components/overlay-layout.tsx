@@ -36,7 +36,7 @@ export function OverlayActions({ primary, secondary }: OverlayActionsProps) {
 
   useLayoutEffect(() => {
     const container = group.current
-    if (!container) return
+    if (!container || container.closest("[data-stack-actions]")) return
     const wide = window.matchMedia("(min-width: 40rem)")
 
     const updateLayout = () => {

@@ -53,6 +53,7 @@ export function ModalContent({
       <Primitive.Viewport className="ui-centered-viewport">
         <Primitive.Popup
           {...props}
+          data-stack-actions=""
           className={cn("ui-centered-panel", className)}
         />
       </Primitive.Viewport>
